@@ -1,96 +1,155 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import messagebox, filedialog
 import sqlite3
+import os
+import shutil
 import subprocess
 
-def fetch_employees():
+def create_employees_table():
     conn = sqlite3.connect('employeemanagement.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT name, department, position, 'Active' as status FROM employees")
-    employees = cursor.fetchall()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS employees
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       name TEXT NOT NULL,
+                       position TEXT,
+                       department TEXT,
+                       email TEXT,
+                       phone TEXT,
+                       address TEXT,
+                       resume_path TEXT)''')
+    conn.commit()
     conn.close()
-    return employees
 
-def populate_table(employees):
-    for i in tree.get_children():
-        tree.delete(i)
-    for employee in employees:
-        tree.insert('', 'end', values=employee)
+def load_employee_data(employee_id=None):
+    if employee_id:
+        conn = sqlite3.connect('employeemanagement.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM employees WHERE id = ?", (employee_id,))
+        employee = cursor.fetchone()
+        conn.close()
+        if employee:
+            Name_Entry.insert(0, employee[1])
+            Position_Entry.insert(0, employee[2])
+            Department_Entry.insert(0, employee[3])
+            Email_Entry.insert(0, employee[4])
+            Phone_Entry.insert(0, employee[5])
+            Address_Entry.insert(0, employee[6])
+            Resume_Entry.insert(0, employee[7])
 
-def search_employees():
-    search_term = search_entry.get().lower()
-    all_employees = fetch_employees()
-    filtered_employees = [emp for emp in all_employees if search_term in emp[0].lower()]
-    populate_table(filtered_employees)
+def save_employee():
+    name = Name_Entry.get()
+    position = Position_Entry.get()
+    department = Department_Entry.get()
+    email = Email_Entry.get()
+    phone = Phone_Entry.get()
+    address = Address_Entry.get()
+    resume_path = Resume_Entry.get()
 
-def add_new_employee():
+    if not name:
+        messagebox.showerror("Error", "Name is required")
+        return
+
+    conn = sqlite3.connect('employeemanagement.db')
+    cursor = conn.cursor()
+    cursor.execute('''INSERT INTO employees (name, position, department, email, phone, address, resume_path)
+                      VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                   (name, position, department, email, phone, address, resume_path))
+    conn.commit()
+    conn.close()
+
+    messagebox.showinfo("Success", "Employee information saved successfully")
+    clear_fields()
+
+def clear_fields():
+    Name_Entry.delete(0, END)
+    Position_Entry.delete(0, END)
+    Department_Entry.delete(0, END)
+    Email_Entry.delete(0, END)
+    Phone_Entry.delete(0, END)
+    Address_Entry.delete(0, END)
+    Resume_Entry.delete(0, END)
+
+def browse_resume():
+    filename = filedialog.askopenfilename(filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")])
+    if filename:
+        destination = os.path.join("resumes", os.path.basename(filename))
+        os.makedirs("resumes", exist_ok=True)
+        shutil.copy(filename, destination)
+        Resume_Entry.delete(0, END)
+        Resume_Entry.insert(0, destination)
+
+def go_back():
     root.destroy()
     subprocess.Popen(["python", "employeedetails.py"])
 
-def exit_page():
-    root.destroy()
-    subprocess.Popen(["python", "dashboard.py"])
+# Create the employees table if it doesn't exist
+create_employees_table()
 
 root = Tk()
-root.title("Employee Management System - Employees")
+root.title("Employee Management System - Employee Details")
+#root.state('zoomed')  # Maximize the window
+try:
+    root.iconbitmap("z.ico")
+except:
+    pass  # If the icon file is not found, just skip it
 root.config(bg="#1E2E56")
-# root.state('zoomed')  # This will maximize the window
 
-# Title
-title_label = Label(root, text="Employee Management System", font=("Arial", 36, "bold"), bg="#1E2E56", fg="white")
-title_label.pack(pady=30)
+EMs = Label(text="Employee Management System", font=("Arial", 24, "bold"), bg="#1E2E56", fg="white")
+EMs.pack(pady=20)
 
-# Search bar
-search_frame = Frame(root, bg="#1E2E56")
-search_frame.pack(pady=30)
+EmployeeDetails = Label(text="Employee Details", font=("Arial", 22, "bold"), bg="#1E2E56", fg="white")
+EmployeeDetails.pack(pady=10)
 
-search_entry = Entry(search_frame, font=("Arial", 24), width=40)
-search_entry.pack(side=LEFT, padx=20)
+frame = Frame(root, bg="#1E2E56")
+frame.pack(expand=True)
 
-search_button = Button(search_frame, text="Search", font=("Arial", 20), command=search_employees, bg="#4CAF50", fg="white", padx=20, pady=10)
-search_button.pack(side=LEFT)
+Name = Label(frame, text="Name", bg="#1E2E56", fg="white", font=("Arial", 20))
+Name.grid(row=0, column=0, sticky="e", padx=10, pady=10)
+Name_Entry = Entry(frame, font=("Arial", 20), width=30)
+Name_Entry.grid(row=0, column=1, padx=10, pady=10)
 
-# Table
-table_frame = Frame(root, bg="#1E2E56")
-table_frame.pack(pady=30, padx=50, fill=BOTH, expand=TRUE)
+Position = Label(frame, text="Position", bg="#1E2E56", fg="white", font=("Arial", 20))
+Position.grid(row=1, column=0, sticky="e", padx=10, pady=10)
+Position_Entry = Entry(frame, font=("Arial", 20), width=30)
+Position_Entry.grid(row=1, column=1, padx=10, pady=10)
 
-tree = ttk.Treeview(table_frame, columns=('Name', 'Department', 'Position', 'Status'), show='headings', height=15)
-tree.heading('Name', text='Name')
-tree.heading('Department', text='Department')
-tree.heading('Position', text='Position')
-tree.heading('Status', text='Status')
+Department = Label(frame, text="Department", bg="#1E2E56", fg="white", font=("Arial", 20))
+Department.grid(row=2, column=0, sticky="e", padx=10, pady=10)
+Department_Entry = Entry(frame, font=("Arial", 20), width=30)
+Department_Entry.grid(row=2, column=1, padx=10, pady=10)
 
-tree.column('Name', width=400, anchor=CENTER)
-tree.column('Department', width=300, anchor=CENTER)
-tree.column('Position', width=300, anchor=CENTER)
-tree.column('Status', width=200, anchor=CENTER)
+Email = Label(frame, text="Email", bg="#1E2E56", fg="white", font=("Arial", 20))
+Email.grid(row=3, column=0, sticky="e", padx=10, pady=10)
+Email_Entry = Entry(frame, font=("Arial", 20), width=30)
+Email_Entry.grid(row=3, column=1, padx=10, pady=10)
 
-tree.pack(fill=BOTH, expand=TRUE)
+Phone = Label(frame, text="Phone", bg="#1E2E56", fg="white", font=("Arial", 20))
+Phone.grid(row=4, column=0, sticky="e", padx=10, pady=10)
+Phone_Entry = Entry(frame, font=("Arial", 20), width=30)
+Phone_Entry.grid(row=4, column=1, padx=10, pady=10)
 
-# Configure colors and fonts
-style = ttk.Style()
-style.theme_use("default")
-style.configure("Treeview", 
-                background="#1E2E56", 
-                foreground="white", 
-                fieldbackground="#1E2E56",
-                borderwidth=0,
-                font=('Arial', 16))
-style.configure("Treeview.Heading", font=('Arial', 18, 'bold'), foreground="white", background="#0A7E8C")
-style.map('Treeview', background=[('selected', '#0A7E8C')])
+Address = Label(frame, text="Address", bg="#1E2E56", fg="white", font=("Arial", 20))
+Address.grid(row=5, column=0, sticky="e", padx=10, pady=10)
+Address_Entry = Entry(frame, font=("Arial", 20), width=30)
+Address_Entry.grid(row=5, column=1, padx=10, pady=10)
 
-# Buttons
-button_frame = Frame(root, bg="#1E2E56")
-button_frame.pack(pady=30)
+Resume = Label(frame, text="Resume", bg="#1E2E56", fg="white", font=("Arial", 20))
+Resume.grid(row=6, column=0, sticky="e", padx=10, pady=10)
+Resume_Entry = Entry(frame, font=("Arial", 20), width=30)
+Resume_Entry.grid(row=6, column=1, padx=10, pady=10)
+Browse_Button = Button(frame, text="Browse", font=("Arial", 16), command=browse_resume)
+Browse_Button.grid(row=6, column=2, padx=10, pady=10)
 
-add_button = Button(button_frame, text="Add new employee", font=("Arial", 20), command=add_new_employee, bg="#2196F3", fg="white", padx=20, pady=10)
-add_button.pack(side=LEFT, padx=20)
+button_frame = Frame(frame, bg="#1E2E56")
+button_frame.grid(row=7, column=0, columnspan=3, pady=20)
 
-exit_button = Button(button_frame, text="Exit", font=("Arial", 20), command=exit_page, bg="#f44336", fg="white", padx=20, pady=10)
-exit_button.pack(side=LEFT, padx=20)
+Save_Button = Button(button_frame, text="Save", font=("Arial", 20), command=save_employee, bg="#4CAF50", fg="white")
+Save_Button.pack(side=LEFT, padx=10)
 
-# Populate table
-employees = fetch_employees()
-populate_table(employees)
+Back = Button(button_frame, text="Back", font=("Arial", 20), command=go_back, bg="#f44336", fg="white")
+Back.pack(side=LEFT, padx=10)
 
-root.mainloop()
+# If you want to load existing employee data, call this function with the employee ID
+# load_employee_data(employee_id)
+
+mainloop()

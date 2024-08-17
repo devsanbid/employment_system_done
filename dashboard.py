@@ -22,7 +22,8 @@ def create_tables():
                        department TEXT,
                        email TEXT,
                        phone TEXT,
-                       address TEXT
+                       address TEXT,
+                       resume_path TEXT
                        )''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS events
                       (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +37,7 @@ def create_tables():
                        name TEXT NOT NULL,
                        position TEXT,
                        status TEXT,
-                       application_date TEXT,
+                       department TEXT,
                        resume_path TEXT)''')
     
     conn.commit()
@@ -65,7 +66,7 @@ def open_projects():
 
 def open_employees():
     root.destroy()
-    subprocess.Popen(["python", "employees.py"])
+    subprocess.Popen(["python", "employeedetails.py"])
 
 def open_applicant_tracking():
     root.destroy()

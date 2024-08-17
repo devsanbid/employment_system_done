@@ -7,11 +7,17 @@ import subprocess
 def create_database():
     conn = sqlite3.connect('employeemanagement.db')
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users
-                    (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    email TEXT UNIQUE NOT NULL,
-                    username TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name TEXT DEFAULT NULL,
+    phone TEXT DEFAULT NULL,
+    position TEXT DEFAULT NULL,
+    department TEXT DEFAULT NULL,
+    address TEXT DEFAULT NULL
+)''')
     conn.commit()
     conn.close()
 

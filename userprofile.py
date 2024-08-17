@@ -106,11 +106,10 @@ Exit.place(x=1150, y=700)
 # Load user data
 user_data = load_user_data(current_user_id)
 if user_data:
-    Name_Entry.insert(0, user_data[1])
-    Email_Entry.insert(0, user_data[2])
-    Phone_Entry.insert(0, user_data[4] if len(user_data) > 4 else "")
-    Position_Entry.insert(0, user_data[5] if len(user_data) > 5 else "")
-    Department_Entry.insert(0, user_data[6] if len(user_data) > 6 else "")
-    Address_Entry.insert(0, user_data[7] if len(user_data) > 7 else "")
-
+    Name_Entry.insert(0, user_data[4] if user_data[4] is not None else "")  # Name
+    Email_Entry.insert(0, user_data[1] if user_data[1] is not None else "")  # Email
+    Phone_Entry.insert(0, user_data[5] if user_data[5] is not None else "")  # Phone
+    Position_Entry.insert(0, user_data[6] if user_data[6] is not None else "")  # Position
+    Department_Entry.insert(0, user_data[7] if user_data[7] is not None else "")  # Department
+    Address_Entry.insert(0, user_data[8] if user_data[8] is not None else "")  # Address
 mainloop()

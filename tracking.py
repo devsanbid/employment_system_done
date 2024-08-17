@@ -6,7 +6,7 @@ import subprocess
 def load_applicants():
     conn = sqlite3.connect('employeemanagement.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, position, status, application_date FROM applicants ORDER BY application_date DESC")
+    cursor.execute("SELECT id, name, position, status, department FROM applicants ORDER BY department DESC")
     applicants = cursor.fetchall()
     conn.close()
     return applicants
@@ -26,15 +26,16 @@ def search_applicants():
     name = Applicant_Entry.get().lower()
     position = Position_Entry.get().lower()
     status = Status_Entry.get().lower()
+    department = Department_Entry.get().lower()
 
     conn = sqlite3.connect('employeemanagement.db')
     cursor = conn.cursor()
     
-    query = """SELECT id, name, position, status, application_date 
+    query = """SELECT id, name, position, status, department 
                FROM applicants 
-               WHERE LOWER(name) LIKE ? AND LOWER(position) LIKE ? AND LOWER(status) LIKE ? 
-               ORDER BY application_date DESC"""
-    cursor.execute(query, (f'%{name}%', f'%{position}%', f'%{status}%'))
+               WHERE LOWER(name) LIKE ? AND LOWER(position) LIKE ? AND LOWER(status) LIKE ? AND LOWER(department) LIKE ?
+               ORDER BY department DESC"""
+    cursor.execute(query, (f'%{name}%', f'%{position}%', f'%{status}%', f'%{department}%'))
     
     applicants = cursor.fetchall()
     conn.close()
@@ -80,21 +81,26 @@ Status.place(x=1000, y=100)
 Status_Entry = Entry(root, font=("Arial", 20))
 Status_Entry.place(x=1100, y=100)
 
+Department = Label(text="Department", bg="#1E2E56", fg="white", font=("Arial", 20))
+Department.place(x=50, y=150)
+Department_Entry = Entry(root, font=("Arial", 20))
+Department_Entry.place(x=250, y=150)
+
 Search_Button = Button(text="Search", font=("Arial", 16), command=search_applicants, bg="#4CAF50", fg="white")
-Search_Button.place(x=1400, y=100)
+Search_Button.place(x=1400, y=150)
 
 # Create Treeview
-tree = ttk.Treeview(root, columns=('ID', 'Name', 'Position', 'Status', 'Application Date'), show='headings')
+tree = ttk.Treeview(root, columns=('ID', 'Name', 'Position', 'Status', 'Department'), show='headings')
 tree.heading('ID', text='ID')
 tree.heading('Name', text='Applicant Name')
 tree.heading('Position', text='Position')
 tree.heading('Status', text='Status')
-tree.heading('Application Date', text='Application Date')
+tree.heading('Department', text='Department')
 tree.column('ID', width=50)
 tree.column('Name', width=300)
 tree.column('Position', width=200)
 tree.column('Status', width=150)
-tree.column('Application Date', width=150)
+tree.column('Department', width=150)
 tree.place(x=50, y=200, width=1500, height=400)
 
 button_frame = Frame(root, bg="#1E2E56")

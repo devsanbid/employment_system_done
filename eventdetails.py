@@ -3,6 +3,7 @@ from tkinter import messagebox
 import sqlite3
 import datetime
 import subprocess
+import sys  # Import sys to access command line arguments
 
 def create_events_table():
     conn = sqlite3.connect('employeemanagement.db')
@@ -66,7 +67,6 @@ def go_back():
     root.destroy()
     subprocess.Popen(["python", "event.py"])
 
-# Create the events table if it doesn't exist
 create_events_table()
 
 root = Tk()
@@ -107,7 +107,9 @@ Save_Button.place(x=1000, y=640)
 Back = Button(text="Back", font=("Arial", 20), command=go_back, bg="#f44336", fg="white")
 Back.place(x=1200, y=640)
 
-# If you want to load existing event data, call this function with the event ID
-# load_event_data(event_id)
+# Load event data if an ID is provided
+if len(sys.argv) > 1:
+    event_id = sys.argv[1]
+    load_event_data(event_id)
 
 mainloop()
